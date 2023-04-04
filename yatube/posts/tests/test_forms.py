@@ -5,7 +5,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from ..models import Group, Post
-from ..forms import PostForm
+
 
 User = get_user_model()
 
@@ -30,7 +30,7 @@ class Form_Tests(TestCase):
         )
 
     def test_post_with_image_context(self):
-        """Проверка наличия изображения в словаре контекста на нужных страницах."""
+        """изображения в словаре контекста на нужных страницах."""
         post = Post.objects.create(
             text='Текст поста с картинкой',
             author=self.post_author,
@@ -40,7 +40,10 @@ class Form_Tests(TestCase):
 
         urls = [
             reverse('posts:index'),
-            reverse('posts:profile', kwargs={'username': self.post_author.username}),
+            reverse(
+                'posts:profile',
+                kwargs={'username': self.post_author.username}
+            ),
             reverse('posts:group_list', kwargs={'slug': self.group.slug}),
             reverse('posts:post_detail', kwargs={'post_id': post.id}),
         ]
@@ -49,12 +52,13 @@ class Form_Tests(TestCase):
             with self.subTest(url=url):
                 response = self.client.get(url)
                 self.assertContains(response, '<img')
+
     def setUp(self):
         self.authorized_user = Client()
         self.authorized_user.force_login(self.post_author)
 
     def test_create_post_valid_form(self):
-        """Проверка при отправке валидной формы со страницы создания поста + картинка."""
+        """Отправка валидной формы со страницы создания поста + картинка."""
         posts_count = Post.objects.count()
         form_data = {
             'text': 'Текст поста',
@@ -72,7 +76,7 @@ class Form_Tests(TestCase):
                 kwargs={'username': self.post_author.username})
         )
         self.assertEqual(Post.objects.count(), posts_count + 1)
-        
+
         form_data_with_image = {
             'text': 'Текст поста с картинкой',
             'group': self.group.id,
@@ -91,7 +95,6 @@ class Form_Tests(TestCase):
                 kwargs={'username': self.post_author.username})
         )
         self.assertEqual(Post.objects.count(), posts_count + 2)
-    
 
     def test_edit_post_valid_form(self):
         """Проверка при отправке валидной формы со страницы редактирования."""
