@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% load thumbnail %}
+{% block content %}
+  <main>
+    <div class="container py-5">
+      <h1>{{ group.title }}</h1>
+      <p>
+        {{ group.description }}
+      </p>
+        {% for post in page_obj %}
+          <article class="content">
+            <ul>
+              <li>
+                Автор: 
+                  {% if post.author.get_full_name %}{{ post.author.get_full_name }}{% else %}{{ post.author }}{% endif %}
+              </li>
+              <li>
+                 Дата публикации: {{ post.pub_date|date:"d E Y" }}
+              </li>
+            </ul>      
+            {% thumbnail post.image "900x639" crop="center" upscale=True as im %}
+              <img class="card-img my-2" src="{{ im.url }}" style="max-width: 900px; height: auto;">
+            {% endthumbnail %}
+            <p>
+              {{ post.text }}
+            </p>
+            <a href="{% url 'posts:post_detail' post.id %}" style="background-color: lightskyblue; color: black; padding: 10px 20px; border: none; text-decoration: none; border-radius: 5px; display: inline-block;">Подробная информация</a>
+            <a href="{% url 'posts:group_list' post.group.slug %}" style="background-color: lightskyblue; color: black; padding: 10px 20px; border: none; text-decoration: none; border-radius: 5px; display: inline-block;">все записи группы</a>
+          </article>
+        {% if not forloop.last %}<hr>{% endif %}   
+        {% endfor %}
+    </div>  
+  </main>
+  <div class="d-flex justify-content-center">
+    <div>{% include 'posts/includes/paginator.html' %}</div>
+  </div>
+{% endblock %} 

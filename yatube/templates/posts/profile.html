@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% load thumbnail %}
+{% block title %}
+    {% if author.get_full_name %}
+        {{ author.get_full_name }} профайл пользователя
+    {% else %}
+        {{ author }} профайл пользователя
+    {% endif %}
+{% endblock %}
+{% block content %}
+    <div class="container py-5">
+        <h1>Все посты пользователя: {% if author.get_full_name %}{{ author.get_full_name }}{% else %}{{ author }}{% endif %}</h1>
+        <h3>Всего постов: {{ page_obj.paginator.count }}</h3>
+        {% if request.user != author %}
+            {% if following %}
+            <a href="{% url 'posts:profile_unfollow' author.username %}"
+            style="background-color: black; color: red; padding: 10px 20px; border: none; text-decoration: none; border-radius: 5px; display: inline-block;font-weight: semi-bold;">
+             Отписаться
+         </a>
+                {% else %}
+                <a href="{% url 'posts:profile_follow' author.username %}"
+           style="background-color: lightskyblue; color: black; padding: 10px 20px; border: none; text-decoration: none; border-radius: 5px; display: inline-block;">
+            Подписаться
+        </a>
+            {% endif %}
+        {% endif %}
+    {% for post in page_obj %}
+    <div class="content">
+      <ul>
+        <li>
+          Автор: {% if post.author.get_full_name %}{{ post.author.get_full_name }}{% else %}{{ post.author }}{% endif %}<br>
+        </li>
+          <li>
+            Дата публикации: <strong><em>{{ post.pub_date|date:'d E Y' }}</em></strong>
+          </li>
+      </ul>
+        <br>
+        {% thumbnail post.image "600x339" crop="center" upscale=True as im %}
+          <img class="card-img my-2" src="{{ im.url }}">
+        {% endthumbnail %}
+        <p>{{ post.text }}</p>
+        <a href="{% url 'posts:post_detail' post.id %}" style="background-color: lightskyblue; color: black; padding: 10px 20px; border: none; text-decoration: none; border-radius: 5px; display: inline-block;">Подробная информация</a> 
+        {% if post.group %}
+        <a href="{% url 'posts:group_list' post.group.slug %}" style="background-color: lightskyblue; color: black; padding: 10px 20px; border: none; text-decoration: none; border-radius: 5px; display: inline-block;">Все записи группы</a>
+        {% endif %}
+    </div>
+    {% if not forloop.last %}<hr>{% endif %}
+    {% endfor %}
+    <div class="d-flex justify-content-center">
+        <div>{% include 'posts/includes/paginator.html' %}</div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% load thumbnail %}
+
+{% block title %}Подписки{% endblock %}
+
+{% block content %}
+  {% include 'posts/includes/switcher.html' with follow=True %}
+
+  <h1>Авторы, на которых вы подписаны</h1>
+
+  {% for post in page_obj %}
+    <div class="container py-1">
+      <article class="content card">
+        <ul>
+          <li>
+            Автор: <a href="{% url 'posts:profile' post.author %}">
+              {% if post.author.get_full_name %}{{ post.author.get_full_name }}{% else %}{{ post.author }}{% endif %}
+            </a>
+          </li>
+          <li>
+            Дата публикации: <strong>{{ post.pub_date|date:'d E Y' }}</strong>
+          </li>
+        </ul>
+
+        {% thumbnail post.image "900x639" crop="center" upscale=True as im %}
+          <img class="card-img my-2" src="{{ im.url }}" style="max-width: 900px; height: auto;">
+        {% endthumbnail %}
+
+        <div class="card-body">
+          <p>{{ post.text}}</p>
+          <a href="{% url 'posts:post_detail' post.id %}" style="background-color: lightskyblue; color: black; padding: 10px 20px; border: none; text-decoration: none; border-radius: 5px; display: inline-block;">Подробная информация</a>  
+          {% if post.group %}
+            <a href="{% url 'posts:group_list' post.group.slug %}" style="background-color: lightskyblue; color: black; padding: 10px 20px; border: none; text-decoration: none; border-radius: 5px; display: inline-block;">все записи группы</a>
+          {% endif %}
+        </div>
+      </article>
+
+      {% if not forloop.last %}<hr>{% endif %}
+    </div>
+  {% endfor %}
+
+  <div class="d-flex justify-content-center">
+    {% include 'posts/includes/paginator.html' %}
+  </div>
+{% endblock %}

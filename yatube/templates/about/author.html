@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Об авторе проекта{% endblock %}
+
+{% block content %}
+<h1>Привет, меня зовут Алексей</h1>
+<img src="{% load static %}{% static 'img/t11.png' %}" alt="angry tiger" style="float:right; margin-right:20px;">
+<div style="width: 90%; margin: 0 auto; text-align: justify;">
+    <p>Родился 29.12.1986. Женат. Есть ребенок.</p>
+    <p>В 2010 году окончил магистратуру по специальности "Геология". В этом же году поступил в аспирантуру ГГФ. </p>
+    <p>С 2010 по 2022 год работал научным сотрудником. Однако жизнь внесла коррективы и я решил освоить новую профессию.</p>
+    <p>В настоящее время прохожу курс "Python разработчик плюс" в Яндекс.Практикуме.</p>
+    <p>На получение новой профессии меня вдохновило желание участвовать в разработке чего-то нового при помощи современных технологий.</p>
+    <p>Люблю картинки с тиграми &#x1F60A;</p>
+</div>
+
+<a href="https://github.com/Dexter72227" target="_blank" style="padding-left: 75px;"><img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="GitHub"></a>
+<a href="https://t.me/Kulkov_AS" target="_blank" style="padding-left: 40px;"><img src="https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&amp;logo=telegram&amp;logoColor=white" alt="Telegram"></a>
+{% endblock %}
