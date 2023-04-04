@@ -155,12 +155,28 @@ class Views_comments_Tests(TestCase):
             text='Текст тестового поста',
             author=self.user,
         )
-        response = self.client.post(reverse('posts:add_comment', kwargs={'post_id': post.id}), {'text': 'Test comment'})
-        self.assertRedirects(response, f'{reverse("login")}?next={reverse("posts:add_comment", kwargs={"post_id": post.id})}')
+        response = self.client.post(
+            reverse('posts:add_comment', kwargs={'post_id': post.id}),
+            {'text': 'Test comment'}
+        )
+        next_url = reverse("posts:add_comment", kwargs={"post_id": post.id})
+        login_url = reverse("login") + "?next=" + next_url
+        self.assertRedirects(
+            response,
+            login_url
+        )
         self.client.force_login(self.user)
-        response = self.client.post(reverse('posts:add_comment', kwargs={'post_id': post.id}), {'text': 'Test comment'})
-        self.assertRedirects(response, reverse('posts:post_detail', kwargs={'post_id': post.id}))
-        self.assertEqual(len(Post.objects.get(id=post.id).comments.all()), 1)
+        response = self.client.post(
+            reverse('posts:add_comment', kwargs={'post_id': post.id}),
+            {'text': 'Test comment'}
+        )
+        self.assertRedirects(
+            response,
+            reverse('posts:post_detail', kwargs={'post_id': post.id})
+        )
+        self.assertEqual(
+            len(Post.objects.get(id=post.id).comments.all()), 1
+        )
 
     def test_comment_appears_after_creation(self):
         """После успешной отправки комментарий появляется на странице поста"""
@@ -170,8 +186,13 @@ class Views_comments_Tests(TestCase):
             author=self.user,
         )
         comment_text = 'Текст тестового комментария'
-        self.client.post(reverse('posts:add_comment', kwargs={'post_id': post.id}), {'text': comment_text})
-        response = self.client.get(reverse('posts:post_detail', kwargs={'post_id': post.id}))
+        self.client.post(
+            reverse('posts:add_comment', kwargs={'post_id': post.id}),
+            {'text': comment_text}
+        )
+        response = self.client.get(
+            reverse('posts:post_detail', kwargs={'post_id': post.id})
+        )
         self.assertContains(response, comment_text)
 
 
@@ -213,6 +234,7 @@ class Views_Cache_Tests(TestCase):
         self.assertNotEqual(content2, content3)
         cache.clear()
 
+
 class Follow_Tests(TestCase):
     def setUp(self):
         self.client = Client()
@@ -222,26 +244,53 @@ class Follow_Tests(TestCase):
 
     def test_follow_user(self):
         """Проверка, что пользователь может подписаться на других."""
-        response = self.client.get(reverse('posts:profile_follow', kwargs={'username': self.user2.username}))
-        self.assertRedirects(response, reverse('posts:profile', kwargs={'username': self.user2.username}))
-        self.assertTrue(Follow.objects.filter(user=self.user1, author=self.user2).exists())
+        response = self.client.get(
+            reverse(
+                'posts:profile_follow',
+                kwargs={'username': self.user2.username}
+            )
+        )
+        self.assertRedirects(
+            response,
+            reverse('posts:profile', kwargs={'username': self.user2.username})
+        )
+        self.assertTrue(
+            Follow.objects.filter(user=self.user1, author=self.user2).exists()
+        )
 
     def test_unfollow_user(self):
         """Проверка, что пользователь может отписаться от других."""
         Follow.objects.create(user=self.user1, author=self.user2)
-        response = self.client.get(reverse('posts:profile_unfollow', kwargs={'username': self.user2.username}))
-        self.assertRedirects(response, reverse('posts:profile', kwargs={'username': self.user2.username}))
-        self.assertFalse(Follow.objects.filter(user=self.user1, author=self.user2).exists())
+        response = self.client.get(
+            reverse(
+                'posts:profile_unfollow',
+                kwargs={'username': self.user2.username}
+            )
+        )
+        self.assertRedirects(
+            response,
+            reverse('posts:profile', kwargs={'username': self.user2.username})
+        )
+        self.assertFalse(
+            Follow.objects.filter(
+                user=self.user1, author=self.user2
+            ).exists()
+        )
 
     def test_new_post_in_follower_feed(self):
-        """Проверка, что новая запись пользователя появляется в ленте тех, кто на него подписан."""
-        self.client.get(reverse('posts:profile_follow', kwargs={'username': self.user2.username}))
+        """Запись пользователя появляется в ленте тех, кто на него подписан."""
+        self.client.get(
+            reverse(
+                'posts:profile_follow',
+                kwargs={'username': self.user2.username}
+            )
+        )
         Post.objects.create(author=self.user2, text='test post')
         response = self.client.get(reverse('posts:follow_index'))
         self.assertContains(response, 'test post')
 
     def test_new_post_not_in_non_follower_feed(self):
-        """Проверка, что новая запись пользователя не появляется в ленте тех, кто не подписан на него."""
+        """Запись пользователя не появляется в ленте тех, кто не подписан."""
         Post.objects.create(author=self.user2, text='test post')
         response = self.client.get(reverse('posts:follow_index'))
         self.assertNotContains(response, 'test post')

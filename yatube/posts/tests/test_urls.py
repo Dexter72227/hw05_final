@@ -2,7 +2,7 @@ from http import HTTPStatus
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from ..models import Group, Post
-from django.urls import reverse
+
 
 User = get_user_model()
 
@@ -99,6 +99,7 @@ class Urls_Tests(TestCase):
             with self.subTest(url=url):
                 status_code = self.post_author.get(url).status_code
                 self.assertEqual(status_code, response_code)
+
 
 class Custom_404(TestCase):
     def setUp(self):
