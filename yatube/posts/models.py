@@ -14,36 +14,34 @@ class Group(models.Model):
 
 
 class Post(models.Model):
-    text = models.TextField()
+    text = models.TextField(
+        max_length=400,
+    )
     pub_date = models.DateTimeField(
-        auto_now_add=True,
-        db_index=True
+        auto_now_add=True
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='posts'
+        related_name='posts',
     )
-
-    def __str__(self):
-        return self.text[:15]
-
     group = models.ForeignKey(
         Group,
+        on_delete=models.SET_NULL,
+        related_name='posts',
         blank=True,
         null=True,
-        on_delete=models.SET_NULL,
-        related_name='posts'
     )
-
     image = models.ImageField(
-        'Картинка',
         upload_to='posts/',
         blank=True
     )
 
     class Meta:
         ordering = ['-pub_date']
+
+    def __str__(self):
+        return self.text[:15]
 
 
 class Comment(models.Model):

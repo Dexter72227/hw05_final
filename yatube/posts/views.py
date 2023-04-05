@@ -143,7 +143,3 @@ def profile_unfollow(request, username):
     )
     user_follower.delete()
     return redirect('posts:profile', username)
-
-
-def permission_denied(request, exception):
-    return render(request, 'core/403.html', status=403)
