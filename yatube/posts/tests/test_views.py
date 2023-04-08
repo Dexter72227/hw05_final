@@ -8,7 +8,7 @@ from django.core.cache import cache
 User = get_user_model()
 
 
-class Views_Tests(TestCase):
+class ViewsTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username='admin')
@@ -102,7 +102,7 @@ class Views_Tests(TestCase):
                     self.assertIn(self.post, response.context['page_obj'])
 
 
-class Paginator_Views_Test(TestCase):
+class PaginatorViewsTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -144,7 +144,7 @@ class Paginator_Views_Test(TestCase):
                 self.assertEqual(len(page_obj), 3)
 
 
-class Views_comments_Tests(TestCase):
+class ViewscommentsTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username='admin')
@@ -196,7 +196,7 @@ class Views_comments_Tests(TestCase):
         self.assertContains(response, comment_text)
 
 
-class Views_Cache_Tests(TestCase):
+class ViewsCacheTests(TestCase):
     def setUp(self):
         self.authorized_client = Client()
         self.user = User.objects.create_user(username='admin')
@@ -218,24 +218,22 @@ class Views_Cache_Tests(TestCase):
         response1 = self.authorized_client.get(reverse('posts:index'))
         content1 = response1.content
         self.assertIn('Текст тестового поста'.encode(), content1)
-        self.assertEqual(response1.status_code, 200)
         response2 = self.authorized_client.get(reverse('posts:index'))
         content2 = response2.content
         self.assertIn('Текст тестового поста'.encode(), content2)
-        self.assertEqual(response2.status_code, 200)
         self.assertEqual(content1, content2)
         Post.objects.create(
             text='Пост для проверки кеша',
             author=self.user)
+        cache.clear()
         response3 = self.authorized_client.get(reverse('posts:index'))
         content3 = response3.content
         self.assertIn('Пост для проверки кеша'.encode(), content3)
-        self.assertEqual(response3.status_code, 200)
         self.assertNotEqual(content2, content3)
-        cache.clear()
+        self.assertEqual(response3.status_code, 200)
 
 
-class Follow_Tests(TestCase):
+class FollowTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.user1 = User.objects.create_user(username='user1')
@@ -244,12 +242,15 @@ class Follow_Tests(TestCase):
 
     def test_follow_user(self):
         """Проверка, что пользователь может подписаться на других."""
+        count_before = Follow.objects.count()
         response = self.client.get(
             reverse(
                 'posts:profile_follow',
                 kwargs={'username': self.user2.username}
             )
         )
+        count_after = Follow.objects.count()
+        self.assertEqual(count_after, count_before + 1)
         self.assertRedirects(
             response,
             reverse('posts:profile', kwargs={'username': self.user2.username})
@@ -275,6 +276,11 @@ class Follow_Tests(TestCase):
             Follow.objects.filter(
                 user=self.user1, author=self.user2
             ).exists()
+        )
+        self.assertEqual(
+            Follow.objects.count(),
+            0,
+            'Количество подписок в базе данных не уменьшилось после отписки.'
         )
 
     def test_new_post_in_follower_feed(self):

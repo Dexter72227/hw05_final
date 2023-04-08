@@ -1,5 +1,4 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.decorators.cache import cache_page
 from yatube.settings import num_post
 from .models import Follow, Group, Post, Comment
 from django.contrib.auth.models import User
@@ -34,9 +33,8 @@ def profile(request, username):
     author = get_object_or_404(User, username=username)
     post_list = author.posts.select_related('group')
     page_obj = paginate_queryset(request, post_list, num_post)
-    following = request.user.is_authenticated
-    if following:
-        following = author.following.filter(user=request.user).exists()
+    following = request.user.is_authenticated \
+        and author.following.filter(user=request.user).exists()
     context = {
         'author': author,
         'page_obj': page_obj,
@@ -47,7 +45,7 @@ def profile(request, username):
 
 def post_detail(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
-    comments = Comment.objects.filter(post=post)
+    comments = post.comments.all()
     form = CommentForm()
     context = {
         'post': post,
@@ -106,13 +104,6 @@ def delete_comment(request, comment_id):
     if request.user == comment.author:
         comment.delete()
     return redirect('posts:post_detail', post_id=comment.post.id)
-
-
-@cache_page(20, key_prefix='index_page')
-def my_view(request, group=None):
-    posts = Post.objects.filter(group=group) if group else Post.objects.all()
-    context = {'posts': posts}
-    return render(request, 'index.html', context)
 
 
 @login_required

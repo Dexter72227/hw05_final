@@ -1,13 +1,13 @@
 from http import HTTPStatus
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
-from ..models import Group, Post
+from ..models import Group, Post, Comment
 
 
 User = get_user_model()
 
 
-class Urls_Tests(TestCase):
+class UrlsTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -26,6 +26,11 @@ class Urls_Tests(TestCase):
             author=cls.author,
             group=cls.group,
         )
+        cls.comment = Comment.objects.create(
+            post=cls.post,
+            author=cls.author,
+            text='Тестовый комментарий',
+        )
 
     def setUp(self):
         self.unauthorized_user = Client()
@@ -43,6 +48,7 @@ class Urls_Tests(TestCase):
             f'/posts/{self.post.id}/': 'posts/post_detail.html',
             f'/posts/{self.post.id}/edit/': 'posts/create_post.html',
             '/create/': 'posts/create_post.html',
+            '/follow/': 'posts/follow.html',
         }
         for adress, template in templates_url_names.items():
             with self.subTest(adress=adress):
@@ -60,6 +66,7 @@ class Urls_Tests(TestCase):
             f'/posts/{self.post.id}/edit/': HTTPStatus.FOUND,
             '/create/': HTTPStatus.FOUND,
             '/unexisting_page/': HTTPStatus.NOT_FOUND,
+            '/follow/': HTTPStatus.FOUND,
         }
         for url, response_code in field_urls_code.items():
             with self.subTest(url=url):
@@ -77,6 +84,7 @@ class Urls_Tests(TestCase):
             f'/posts/{self.post.id}/edit/': HTTPStatus.FOUND,
             '/create/': HTTPStatus.OK,
             '/unexisting_page/': HTTPStatus.NOT_FOUND,
+            '/follow/': HTTPStatus.OK,
         }
         for url, response_code in field_urls_code.items():
             with self.subTest(url=url):
@@ -94,6 +102,7 @@ class Urls_Tests(TestCase):
             f'/posts/{self.post.id}/edit/': HTTPStatus.OK,
             '/create/': HTTPStatus.OK,
             '/unexisting_page/': HTTPStatus.NOT_FOUND,
+            '/follow/': HTTPStatus.OK,
         }
         for url, response_code in field_urls_code.items():
             with self.subTest(url=url):
@@ -101,7 +110,7 @@ class Urls_Tests(TestCase):
                 self.assertEqual(status_code, response_code)
 
 
-class Custom_404(TestCase):
+class Custom404(TestCase):
     def setUp(self):
         self.client = Client()
 
