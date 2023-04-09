@@ -220,16 +220,15 @@ class ViewsCacheTests(TestCase):
         self.assertIn('Текст тестового поста'.encode(), content1)
         response2 = self.authorized_client.get(reverse('posts:index'))
         content2 = response2.content
-        self.assertIn('Текст тестового поста'.encode(), content2)
         self.assertEqual(content1, content2)
+        cache.clear()
         Post.objects.create(
             text='Пост для проверки кеша',
             author=self.user)
-        cache.clear()
         response3 = self.authorized_client.get(reverse('posts:index'))
         content3 = response3.content
-        self.assertIn('Пост для проверки кеша'.encode(), content3)
         self.assertNotEqual(content2, content3)
+        self.assertIn('Пост для проверки кеша'.encode(), content3)
         self.assertEqual(response3.status_code, 200)
 
 
