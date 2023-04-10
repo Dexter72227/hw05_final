@@ -2,8 +2,9 @@
 
 {% load cache %}
 {% load thumbnail %}
-{% cache 20 "content" %}
+
 {% block content %}
+{% cache 20 "content" %}
 {% include 'posts/includes/switcher.html' %}
   
   <div class="container py-1">
@@ -47,5 +48,5 @@
       {% include 'posts/includes/paginator.html' %}
     </div>
   </div>
+  {% endcache %}
 {% endblock %}
-{% endcache %}

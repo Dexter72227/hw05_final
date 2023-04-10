@@ -217,14 +217,13 @@ class ViewsCacheTests(TestCase):
         """Проверка работы кеша на главной странице"""
         response1 = self.authorized_client.get(reverse('posts:index'))
         content1 = response1.content
-        self.assertIn('Текст тестового поста'.encode(), content1)
+        Post.objects.create(
+            text='Пост для проверки кеша',
+            author=self.user)
         response2 = self.authorized_client.get(reverse('posts:index'))
         content2 = response2.content
         self.assertEqual(content1, content2)
         cache.clear()
-        Post.objects.create(
-            text='Пост для проверки кеша',
-            author=self.user)
         response3 = self.authorized_client.get(reverse('posts:index'))
         content3 = response3.content
         self.assertNotEqual(content2, content3)
